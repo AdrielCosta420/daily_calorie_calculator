@@ -1,24 +1,54 @@
-import 'package:daily_calorie_calculator/app/presentation/pages/history_information.dart';
-import 'package:daily_calorie_calculator/app/presentation/stores/article_store.dart';
+// ignore_for_file: avoid_print
+
+import 'package:daily_calorie_calculator/app/presentation/pages/user_information_history_page.dart';
+import 'package:daily_calorie_calculator/app/presentation/pages/weight_gain_result_page.dart';
+import 'package:daily_calorie_calculator/app/presentation/pages/weight_loss_result_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 
 import '../../injectable.dart';
+import '../stores/user_information_store.dart';
+import '../widgets/dropdown_widget.dart';
+import '../widgets/text_form_field_widget.dart';
 
-class CalorieCalculatorScreen extends StatefulWidget {
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
-  _CalorieCalculatorScreenState createState() => _CalorieCalculatorScreenState();
+  HomePageState createState() => HomePageState();
 }
 
-class _CalorieCalculatorScreenState extends State<CalorieCalculatorScreen> {
+class HomePageState extends State<HomePage> {
   final _formKey = GlobalKey<FormState>();
+  final store = injector.get<UserInformationStore>();
 
-  final store = injector.get<ArticleStore>();
+  @override
+  void dispose() {
+    store.clearStore();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xffc9deb5),
       appBar: AppBar(
-        title: const Text('Calculadora de Calorias Diárias'),
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'Calorias Diárias',
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Histórico',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UserInformationHistoryPage(),
+              ),
+            ),
+            icon: const Icon(Icons.history),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -28,10 +58,19 @@ class _CalorieCalculatorScreenState extends State<CalorieCalculatorScreen> {
               key: _formKey,
               child: ListView(
                 children: [
-                  // Campo de Peso
-                  TextFormField(
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Preencha os campos abaixo',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormFieldWidget(
+                    labelText: 'Peso (kg)',
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Peso (kg)'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Informe seu peso';
@@ -40,11 +79,10 @@ class _CalorieCalculatorScreenState extends State<CalorieCalculatorScreen> {
                     },
                     onChanged: (value) => store.setWeight(double.tryParse(value) ?? 0),
                   ),
-
-                  // Campo de Altura
-                  TextFormField(
+                  const SizedBox(height: 12),
+                  TextFormFieldWidget(
+                    labelText: 'Altura (cm)',
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Altura (cm)'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Informe sua altura';
@@ -53,11 +91,10 @@ class _CalorieCalculatorScreenState extends State<CalorieCalculatorScreen> {
                     },
                     onChanged: (value) => store.setHeight(double.tryParse(value) ?? 0),
                   ),
-
-                  // Campo de Idade
-                  TextFormField(
+                  const SizedBox(height: 12),
+                  TextFormFieldWidget(
+                    labelText: 'Idade',
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Idade'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Informe sua idade';
@@ -66,67 +103,99 @@ class _CalorieCalculatorScreenState extends State<CalorieCalculatorScreen> {
                     },
                     onChanged: (value) => store.setAge(int.tryParse(value) ?? 0),
                   ),
-
-                  // Seletor de Gênero
+                  const SizedBox(height: 12),
                   const Padding(
                     padding: EdgeInsets.only(top: 16.0),
                     child: Text('Gênero', style: TextStyle(fontSize: 16)),
                   ),
-                  RadioListTile<String>(
-                    title: const Text('Masculino'),
-                    value: 'Masculino',
-                    groupValue: store.gender,
-                    onChanged: (value) {
-                      store.setGender(value ?? '');
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<String>(
+                          activeColor: Colors.black,
+                          title: const Text('Masculino'),
+                          value: 'Masculino',
+                          groupValue: store.gender,
+                          onChanged: (value) {
+                            store.setGender(value ?? '');
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<String>(
+                          activeColor: Colors.black,
+                          title: const Text('Feminino'),
+                          value: 'Feminino',
+                          groupValue: store.gender,
+                          onChanged: (value) {
+                            print('Genero selected: $value');
+                            store.setGender(value ?? '');
+                            print('Genero store: ${store.gender}');
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  RadioListTile<String>(
-                    title: const Text('Feminino'),
-                    value: 'Feminino',
-                    groupValue: store.gender,
-                    onChanged: (value) => store.setGender(value ?? ''),
-                  ),
-
-                  // Nível de Atividade Física
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: 'Nível de atividade física'),
+                  DropdownWidget(
+                    labelText: 'Nível de atividade física',
                     value: store.activityLevel,
-                    onChanged: (newValue) => store.setActivityLevel(newValue ?? ''),
+                    items: store.activityLevels,
+                    onChanged: (newValue) {
+                      print('Atividade selected: $newValue');
+                      store.setActivityLevel(newValue ?? '');
+                      print('Atividade store: ${store.activityLevel}');
+                    },
                     validator: (value) => value == null ? 'Selecione um nível de atividade' : null,
-                    items: store.activityLevels
-                        .map((level) => DropdownMenuItem(
-                              value: level,
-                              child: Text(level),
-                            ))
-                        .toList(),
                   ),
-
-                  // Objetivo
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: 'Objetivo'),
+                  const SizedBox(height: 12),
+                  DropdownWidget(
+                    labelText: 'Objetivo',
                     value: store.goal,
-                    onChanged: (newValue) => store.goal = newValue ?? '',
+                    items: store.goals,
+                    onChanged: (newValue) {
+                      print('Objetivo selected: $newValue');
+                      store.setGoal(newValue ?? '');
+                      print('Objetivo store: ${store.goal}');
+                    },
                     validator: (value) => value == null ? 'Selecione um objetivo' : null,
-                    items: store.goals
-                        .map((goal) => DropdownMenuItem(
-                              value: goal,
-                              child: Text(goal),
-                            ))
-                        .toList(),
                   ),
-
-                  // Botão para calcular
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff447a37),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                     onPressed: () {
-                      // if (_formKey.currentState?.validate() ?? false) {
-                      //   store.saveUserInformation();
-                      // }
-                      store.loadUserInformation();
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryInformation()));
+                      if (_formKey.currentState?.validate() ?? false) {
+                        store.calculateTMB();
+                        store.calculateTotalCalories();
+                        store.addToHistory();
+                        store.saveUserInformation();
+
+                        if (store.goal == 'Perda de peso') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const WeightLossResultPage(),
+                            ),
+                          );
+                        } else if (store.goal == 'Ganho de peso') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const WeightGainResultPage(),
+                            ),
+                          );
+                        }
+                      }
                     },
-                    child: const Text('Enviar'),
+                    child: const Text(
+                      'Enviar',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ),
                 ],
               ),

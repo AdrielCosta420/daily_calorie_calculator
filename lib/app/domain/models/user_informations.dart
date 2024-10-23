@@ -6,6 +6,7 @@ class UserInformations {
   final String gender;
   final String activityLevel;
   final String goal;
+  final double? calories;
   UserInformations({
     required this.weight,
     required this.height,
@@ -13,5 +14,11 @@ class UserInformations {
     required this.gender,
     required this.activityLevel,
     required this.goal,
+    this.calories,
   });
+
+  @override
+  String toString() {
+    return 'UserInformations(weight: $weight, height: $height, age: $age, gender: $gender, activityLevel: $activityLevel, goal: $goal, calories: $calories)';
+  }
 }
