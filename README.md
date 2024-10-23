@@ -41,11 +41,11 @@ Loader
 O projeto segue uma estrutura modular com o uso de MobX para gerenciamento de estado. A lógica de cálculo e armazenamento de dados está separada em stores.
 
 ├── lib
-│   ├── App               # Pasta principal contendo todas as outras pastas
-│   │   ├── core          # Funções e dados centrais
-│   │   ├── domain        # Modelos de dados
-│   │   ├── presentation  # Interface gráfica e widgets
-│   │   ├── stores        # Lógica de negócios com MobX
+      App                 # Pasta principal contendo todas as outras pastas
+       core               # Funções e dados centrais
+       domain             # Modelos de dados
+       presentation       # Interface gráfica e widgets
+       stores             # Lógica de negócios com MobX
 ├── assets                # Imagens e capturas de tela para documentação
 └── pubspec.yaml          # Configurações do projeto e dependências
 
